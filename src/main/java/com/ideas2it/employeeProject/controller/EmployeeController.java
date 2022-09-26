@@ -1,5 +1,7 @@
 package com.ideas2it.employeeProject.controller;
 
+import com.ideas2it.employeeProject.dto.EmployeeDto;
+import com.ideas2it.employeeProject.exception.CustomException;
 import com.ideas2it.employeeProject.model.Employee;
 import com.ideas2it.employeeProject.service.impl.EmployeeServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
-//@CrossOrigin(origins = "http://localhost:3000") //open for specific port
-@CrossOrigin() // open for all ports
+@CrossOrigin(origins = "http://localhost:2020")
 @RestController
 public class EmployeeController {
 
@@ -21,10 +21,9 @@ public class EmployeeController {
     /**
      * Get all the employees
      *
-     * @return ResponseEntity
      */
     @GetMapping("/employees")
-    public ResponseEntity<List<Employee>> getEmployees() {
+    public ResponseEntity<List<EmployeeDto>> getEmployees() {
         try {
             return new ResponseEntity<>(employeeService.getEmployees(), HttpStatus.OK);
         } catch (Exception e) {
@@ -35,44 +34,36 @@ public class EmployeeController {
     /**
      * Get the employee by id
      *
-     * @param id is id
-     * @return ResponseEntity
+     * @param id is employee id
      */
     @GetMapping("/employee/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable("id") long id) {
-            //check if employee exist in database
-            Optional<Employee> empObj = employeeService.getEmployeeById(id);
-
-        return empObj.map(employee -> new ResponseEntity<>(employee, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-
+    public ResponseEntity<EmployeeDto> getEmployeeById(@PathVariable("id") int id) throws CustomException {
+        EmployeeDto employee = employeeService.getEmployeeById(id);
+            return new ResponseEntity<>(employee, HttpStatus.OK);
     }
 
     /**
      * Create new employee
      *
-     * @param employee is employee object
-     * @return ResponseEntity
+     * @param employeeDto is employee object
      */
-    @PostMapping("/employee")
-    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) {
-        return new ResponseEntity<>(employeeService.addEmployee(employee), HttpStatus.OK);
+    @PostMapping("/add")
+    public ResponseEntity<Employee> addEmployee(@RequestBody EmployeeDto employeeDto) throws CustomException {
+        return new ResponseEntity<>(employeeService.addEmployee(employeeDto), HttpStatus.OK);
     }
 
     /**
      * Update Employee record by using it's id
      *
      * @param id is employee id
-     * @param employee is employee object
-     * @return
+     * @param employeeDto is employee object
      */
     @PutMapping("/employee/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable("id") long id, @RequestBody Employee employee) {
+    public ResponseEntity<Employee> updateEmployee(@PathVariable("id") int id, @RequestBody EmployeeDto employeeDto) throws CustomException{
+        EmployeeDto empObj = employeeService.getEmployeeById(id);
 
-        //check if employee exist in database
-        Optional<Employee> empObj = employeeService.getEmployeeById(id);
-
-        if (empObj.isPresent()) {
-            return new ResponseEntity<>(employeeService.updateEmployee(id, employee), HttpStatus.OK);
+        if (empObj != null) {
+            return new ResponseEntity<>(employeeService.updateEmployee(id, employeeDto), HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -85,27 +76,15 @@ public class EmployeeController {
      * @return ResponseEntity
      */
     @DeleteMapping("/employee/{id}")
-    public ResponseEntity<HttpStatus> deleteEmployeeById(@PathVariable("id") long id) {
-            //check if employee exist in database
-            Optional<Employee> emp = employeeService.getEmployeeById(id);
+    public ResponseEntity<HttpStatus> deleteEmployeeById(@PathVariable("id") int id) throws CustomException {
+            EmployeeDto emp = employeeService.getEmployeeById(id);
 
-            if (emp.isPresent()) {
+            if (emp != null) {
 
                 return employeeService.deleteEmployeeById(id);
             }
 
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
-    }
-
-
-    /**
-     * Delete all employees
-     *
-     * @return ResponseEntity
-     */
-    @DeleteMapping("/employees")
-    public ResponseEntity<HttpStatus> deleteAllEmployees() {
-            return employeeService.deleteAllEmployees();
     }
 }

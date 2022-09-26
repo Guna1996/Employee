@@ -1,15 +1,15 @@
 spring.mvc.pathmatch.matching-strategy: ant_path_matcher
 server.port: 2020
 
-db:
-  connection: "{connectionString: '' , username:"
-
+spring:
   datasource:
-    driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost/employee
+    url: jdbc:mysql://localhost/springboot
     username: root
     password: Guna@1996
-    jpa:
-      hibernate.ddl-auto: update
-      generate-ddl: true
-      show-sql: true
+  jpa:
+    hibernate.ddl-auto: update
+
+    database-platform=org:
+      hibernate:
+         dialect:
+           MySQL5InnoDBDialect
